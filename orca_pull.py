@@ -1,11 +1,9 @@
 import xml.etree.ElementTree as ET
 import urllib.request
-import json
 import csv
-import time
 import os
 
-def orca_parse(integration_url):
+def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collection, postman_environment):
     '''extract data from orcascan and compare it to NetSuite item CSV
     output data to json for PATCH request'''
     
@@ -18,13 +16,11 @@ def orca_parse(integration_url):
     # for defining range() of loop
     postcount = len(root)
 
-    # csv data containing inventory items - Required: Master SKU, Quantity
-    input_file = csv.DictReader(open('items.csv', encoding='utf-8'))
+    # netsuite csv data containing inventory items - Required: Internal ID, Master SKU
+    input_file = csv.DictReader(open(netsuite_itemcsv_filepath, encoding='utf-8'))
 
     # to be written to json
     output_list = []
-
-
 
     for row in input_file:
         for i in range(postcount):
@@ -49,11 +45,16 @@ def orca_parse(integration_url):
                         output_list.append(temp_dict)
 
 
-    # write file, creating directory if not present
+    # write CSV file, creating directory if not present
     os.makedirs(os.path.dirname('output/'), exist_ok=True)
-    date = time.strftime("%m-%d-%Y_%H-%M-%S")
-    f = open(f'output/{date}_orca_info.json', 'w')
-    f.write(json.dumps(output_list))
-    f.close()
+
+    keys = output_list[0].keys()
+
+    with open('output/orca_info.csv', 'w') as output:
+        dict_writer = csv.DictWriter(output, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(output_list)
 
     print("File created.")
+
+    os.system(f"newman run {postman_collection} -d .\\output\\orca_info.csv -e {postman_environment}")
