@@ -50,7 +50,7 @@ def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collectio
 
     keys = output_list[0].keys()
 
-    with open('output/orca_info.csv', 'w') as output:
+    with open('output/orca_info.csv', 'w', newline='') as output:
         dict_writer = csv.DictWriter(output, keys)
         dict_writer.writeheader()
         dict_writer.writerows(output_list)
