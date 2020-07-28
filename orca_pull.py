@@ -4,7 +4,7 @@ import csv
 import os
 from logger import Logger
 
-def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collection, postman_environment):
+def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collection, postman_environment, postman_data):
     '''extract data from orcascan and compare it to NetSuite item CSV
     output data to json for PATCH request'''
 
@@ -90,7 +90,7 @@ def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collectio
     log.text("Created JSON PATCH data.")
 
     try:
-        os.system(f"newman run {postman_collection} -d .\\output\\orca_info.csv -e {postman_environment}")
+        os.system(f"newman run {postman_collection} -d {postman_data} -e {postman_environment}")
         log.text(f"Successfully PATCHed {len(output_list)} entries to NetSuite.")
     except Exception as ex:
         error.text(f'Newman could not run, unable to PATCH NetSuite: {ex}')
