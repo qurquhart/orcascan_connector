@@ -26,6 +26,7 @@ def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collectio
 
     except Exception as ex:
         error.text(f"Cannot parse orcascan URL: {ex}")
+        raise
 
     try:
         # netsuite csv data containing inventory items - Required: Internal ID, Master SKU
@@ -34,6 +35,7 @@ def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collectio
 
     except Exception as ex:
         error.text(f"Cannot load NetSuite item data: {ex}")
+        raise
 
 
     # to be written to json
@@ -68,7 +70,8 @@ def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collectio
         os.makedirs(os.path.dirname('output/'), exist_ok=True)
 
     except Exception as ex:
-        error.text(f'Unable to create "output/" directory.')
+        error.text('Unable to create "output/" directory.')
+        raise
 
     try:
         keys = output_list[0].keys()
@@ -80,6 +83,7 @@ def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collectio
 
     except Exception as ex:
         error.text(f'Unable to write to CSV: {ex}')
+        raise
 
  
     log.text("Created JSON PATCH data.")
@@ -89,3 +93,4 @@ def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collectio
         log.text(f"Successfully PATCHed {len(output_list)} entries to NetSuite.")
     except Exception as ex:
         error.text(f'Newman could not run, unable to PATCH NetSuite: {ex}')
+        raise
