@@ -1,5 +1,9 @@
 from datetime import datetime
 import os
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import smtplib
+import ssl
 
 
 class Logger:
@@ -12,9 +16,14 @@ class Logger:
     log.debug(int)
     '''
 
-    def __init__(self, filename, logging_header):
+    def __init__(self, filename, logging_header, send_mail=False, gmail_email = None, gmail_password = None, email_list = None, email_subject = None):
         self.filename = filename
         self.logging_header = logging_header
+        self.send_mail = send_mail
+        self.gmail_email = gmail_email
+        self.gmail_password = gmail_password
+        self.email_list = email_list
+        self.email_subject = email_subject
 
 
     def text(self, log_text):
@@ -28,6 +37,53 @@ class Logger:
         log_file = open(f"logs/{self.filename}", 'a+')
         log_file.write(log_line)
         log_file.close()
+
+        if self.send_mail == True:
+            email_body = log_line
+            email_html = f"<p>{log_line}</p>"
+
+            sender_email = self.gmail_email
+            password = self.gmail_password
+
+            email_list = self.email_list
+
+
+            for receiver_email in email_list:
+                message = MIMEMultipart("alternative")
+                message["Subject"] = self.email_subject
+                message["From"] = sender_email
+                message["To"] = receiver_email
+
+                # Create the plain-text and HTML version of your message
+                text = f"""\
+                {email_body}
+                Updated {datetime.now()}"""
+                html = f"""\
+                <html>
+                    <body>
+                    {email_html}
+                    </body>
+                </html>
+                """
+
+                # Turn these into plain/html MIMEText objects
+                part1 = MIMEText(text, "plain")
+                part2 = MIMEText(html, "html")
+
+                # Add HTML/plain-text parts to MIMEMultipart message
+                # The email client will try to render the last part first
+                message.attach(part1)
+                message.attach(part2)
+
+                # Create secure connection with server and send email
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+                    server.login(sender_email, password)
+                    server.sendmail(
+                        sender_email, receiver_email, message.as_string()
+                    )
+
+
 
 
     def debug(self, lines, hide_errors=False):

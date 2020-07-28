@@ -10,7 +10,8 @@ def orca_connector(integration_url, netsuite_itemcsv_filepath, postman_collectio
 
     # logging
     log = Logger("activity_log.txt", "orca_connector")
-    error = Logger("error_log.txt", "orca_connector")
+    emails = ["quinn@portableblowout.com"]
+    error = Logger("error_log.txt", "orca_connector", True, "pbautomated@gmail.com", "jkl1432l", emails, "Error log: orca_connector()")
 
     try:
         # pull xml data
